@@ -37,6 +37,22 @@ mkdir -p "$APT_STATE_DIR/lists/partial"
 
 APT_OPTIONS="-o debug::nolocking=true -o dir::cache=$APT_CACHE_DIR -o dir::state=$APT_STATE_DIR"
 
+REPO_DIR=$BUILD_DIR/Aptrepos
+
+if [ -f $REPO_DIR ]; then
+  topic "Updating apt caches for adding new repositories"
+  apt-get $APT_OPTIONS update | indent
+  topic "Finished update"
+  topic "Fetching software-properties-common"
+  apt-get $APT_OPTIONS -y install software-properties-common | indent
+
+  topic "Adding all repos in Aptrepos file"
+  for REPO in $(cat $REPO_DIR); do
+    topic "Fetching $REPO"
+    add-apt-repository -y $REPO | indent
+  done
+fi
+
 topic "Updating apt caches"
 apt-get $APT_OPTIONS update | indent
 
